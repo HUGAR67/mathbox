@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><meta name="color-scheme" content="dark light"><meta name="description" content="MathBox 多功能數學與化學工具箱"><title>幾何計算｜MathBox</title><link rel="stylesheet" href="style.css?v=8.0"></head>
+<body data-page="geometry"><header class="site-header"><div><a class="brand" href="index.html">📐 MathBox</a><div class="subtitle">數學、統計、幾何、化學工具箱</div></div><button id="themeToggle" class="icon-btn" title="切換深色模式">🌙</button></header><main class="container"><section class="section-title"><div><h1>📐 幾何計算</h1><p>平面、立體與座標幾何。</p></div></section><div class="geometry-grid">
+<div class="tool-card geometry-card">
+<h2>⭕ 例如：圓</h2>
+<div class="formula geometry-formula">A = πr²　　C = 2πr</div>
+<div class="geometry-input-grid single-input"><label>請輸入半徑<input id="circleR" type="number" value="5" placeholder="請輸入半徑 r"></label></div>
+<button id="calcCircle" class="primary">計算</button><div id="circleResult" class="mini-result"></div>
+</div>
+<div class="tool-card geometry-card">
+<h2>▭ 例如：矩形</h2>
+<div class="formula geometry-formula">A = 長 × 寬　　P = 2(長 + 寬)</div>
+<div class="geometry-input-grid"><label>請輸入長<input id="rectW" type="number" value="8" placeholder="請輸入長"></label><label>請輸入寬<input id="rectH" type="number" value="3" placeholder="請輸入寬"></label></div>
+<button id="calcRect" class="primary">計算</button><div id="rectResult" class="mini-result"></div>
+</div>
+<div class="tool-card geometry-card">
+<h2>🔺 例如：三角形</h2>
+<div class="formula geometry-formula">A = (底 × 高) ÷ 2</div>
+<div class="geometry-input-grid"><label>請輸入底<input id="triB" type="number" value="6" placeholder="請輸入底"></label><label>請輸入高<input id="triH" type="number" value="4" placeholder="請輸入高"></label></div>
+<button id="calcTri" class="primary">計算</button><div id="triResult" class="mini-result"></div>
+</div>
+<div class="tool-card geometry-card">
+<h2>⏢ 例如：梯形</h2>
+<div class="formula geometry-formula">A = (上底 + 下底) × 高 ÷ 2</div>
+<div class="geometry-input-grid geometry-input-grid-3"><label>請輸入上底<input id="trapA" type="number" value="5" placeholder="請輸入上底"></label><label>請輸入下底<input id="trapB" type="number" value="9" placeholder="請輸入下底"></label><label>請輸入高<input id="trapH" type="number" value="4" placeholder="請輸入高"></label></div>
+<button id="calcTrap" class="primary">計算</button><div id="trapResult" class="mini-result"></div>
+</div>
+<div class="tool-card geometry-card">
+<h2>⚪ 例如：球</h2>
+<div class="formula geometry-formula">S = 4πr²　　V = ⁴⁄₃πr³</div>
+<div class="geometry-input-grid single-input"><label>請輸入半徑<input id="sphereR" type="number" value="3" placeholder="請輸入半徑 r"></label></div>
+<button id="calcSphere" class="primary">計算</button><div id="sphereResult" class="mini-result"></div>
+</div>
+<div class="tool-card geometry-card">
+<h2>🥫 例如：圓柱</h2>
+<div class="formula geometry-formula">A底 = πr²　　V = πr²h</div>
+<div class="geometry-input-grid"><label>請輸入半徑<input id="cylR" type="number" value="3" placeholder="請輸入半徑 r"></label><label>請輸入高<input id="cylH" type="number" value="5" placeholder="請輸入高 h"></label></div>
+<button id="calcCylinder" class="primary">計算</button><div id="cylResult" class="mini-result"></div>
+</div>
+<div class="tool-card geometry-card">
+<h2>🔺 例如：圓錐</h2>
+<div class="formula geometry-formula">A底 = πr²　　V = ⅓πr²h</div>
+<div class="geometry-input-grid"><label>請輸入半徑<input id="coneR" type="number" value="3" placeholder="請輸入半徑 r"></label><label>請輸入高<input id="coneH" type="number" value="5" placeholder="請輸入高 h"></label></div>
+<button id="calcCone" class="primary">計算</button><div id="coneResult" class="mini-result"></div>
+</div>
+<div class="tool-card geometry-card">
+<h2>📍 例如：兩點距離</h2>
+<div class="formula geometry-formula">d = √((x₂ − x₁)² + (y₂ − y₁)²)</div>
+<div class="geometry-input-grid"><label>請輸入 X1<input id="dx1" type="number" value="1" placeholder="請輸入 X1"></label><label>請輸入 Y1<input id="dy1" type="number" value="2" placeholder="請輸入 Y1"></label><label>請輸入 X2<input id="dx2" type="number" value="5" placeholder="請輸入 X2"></label><label>請輸入 Y2<input id="dy2" type="number" value="5" placeholder="請輸入 Y2"></label></div>
+<button id="calcDistance" class="primary">計算</button><div id="distanceResult" class="mini-result"></div>
+</div>
+<div class="tool-card geometry-card"><h2>📏 斜率</h2><div class="formula geometry-formula">m=(y₂−y₁)/(x₂−x₁)</div><div class="geometry-input-grid"><input id="gx1" type="number" placeholder="X1"><input id="gy1" type="number" placeholder="Y1"><input id="gx2" type="number" placeholder="X2"><input id="gy2" type="number" placeholder="Y2"></div><button class="primary" onclick="geoSlope()">計算</button><div id="geoSlopeR" class="mini-result"></div></div><div class="tool-card geometry-card"><h2>🎯 中點</h2><div class="formula geometry-formula">M=((x₁+x₂)/2,(y₁+y₂)/2)</div><div class="geometry-input-grid"><input id="gmx1" type="number" placeholder="X1"><input id="gmy1" type="number" placeholder="Y1"><input id="gmx2" type="number" placeholder="X2"><input id="gmy2" type="number" placeholder="Y2"></div><button class="primary" onclick="geoMid()">計算</button><div id="geoMidR" class="mini-result"></div></div><div class="tool-card geometry-card"><h2>⬜ 正方形</h2><div class="formula geometry-formula">A=a²　P=4a</div><div class="geometry-input-grid single-input"><input id="sqA" type="number" placeholder="邊長 a"></div><button class="primary" onclick="sq()">計算</button><div id="sqR" class="mini-result"></div></div></div></main><footer>MathBox · 純 HTML / CSS / JavaScript · GitHub Pages 可直接使用</footer><script src="script.js?v=8.0"></script><script>function gv(id){return Number(document.getElementById(id).value)}function geoSlope(){let d=gv("gx2")-gv("gx1");geoSlopeR.textContent=d===0?"斜率不存在":"m = "+((gv("gy2")-gv("gy1"))/d)}function geoMid(){geoMidR.textContent=`M = (${(gv("gmx1")+gv("gmx2"))/2}, ${(gv("gmy1")+gv("gmy2")/2})`}function sq(){let a=gv("sqA");sqR.textContent=`面積 = ${a*a}，周長 = ${4*a}`}</script></body></html>

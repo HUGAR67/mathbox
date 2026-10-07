@@ -119,37 +119,78 @@ if($('periodicTable')){
 function initSidebar(){
   if(document.querySelector('.side-menu')) return;
   const page=document.body.dataset.page||'';
-  const items=[
-    ['index.html','🏠','首頁',''],
-    ['calculator.html','🧮','計算機','calculator'],
-    ['quadratic.html','🔢','方程式','quadratic'],
-    ['graph.html','📈','函數繪圖','graph'],
-    ['analysis.html','📊','函數分析','analysis'],
-    ['statistics.html','📊','統計','statistics'],
-    ['matrix.html','🔲','矩陣','matrix'],
-    ['combinatorics.html','🎯','排列組合','combinatorics'],
-    ['probability.html','🎲','機率','probability'],
-    ['geometry.html','📐','幾何','geometry'],
-    ['sequence.html','🔢','數列','sequence'],
-    ['units.html','📏','單位換算','units'],
-    ['chemistry.html','🧪','化學配平','chemistry'],
-    ['history.html','🕘','紀錄','history'],
-    ['ai.html','🤖','AI 數學助手','ai']
+  const parts=location.pathname.split('/').filter(Boolean);
+  const depth=Math.max(0, parts.length-2);
+  const rootPath='';
+  const groups=[
+    {title:'主要',items:[
+      [rootPath+'index.html','🏠','首頁',''],
+      [rootPath+'ai.html','🤖','AI 數學助手','ai']
+    ]},
+    {title:'🧮 數學｜中心',items:[
+      [rootPath+'math-center.html','🧮','數學中心','math'],
+      [rootPath+'math.html','📚','數學總覽','math-overview']
+    ]},
+    {title:'➗ 數學｜基礎與代數',items:[
+      [rootPath+'math-basic-category.html','➗','基礎計算','basic-math'],
+      [rootPath+'basic-math.html','🔢','基礎數學工具','basic-math-root'],
+      [rootPath+'calculator.html','🧮','計算機','calculator'],
+      [rootPath+'quadratic.html','🔢','二次方程式','quadratic'],
+      [rootPath+'math-algebra.html','📐','代數工具','algebra']
+    ]},
+    {title:'📈 數學｜函數與座標',items:[
+      [rootPath+'graph.html','📈','函數繪圖','graph'],
+      [rootPath+'analysis.html','📊','函數分析','analysis'],
+      [rootPath+'math-functions.html','📈','函數與座標中心','functions'],
+      [rootPath+'cubic.html','〽️','三次函數','cubic']
+    ]},
+    {title:'📐 數學｜幾何',items:[
+      [rootPath+'geometry.html','📐','幾何計算','geometry-root'],
+      [rootPath+'math-geometry.html','📐','幾何工具中心','geometry'],
+      [rootPath+'math-geometry.html','📍','座標幾何','geometry-distance']
+    ]},
+    {title:'🔢 數學｜數列與數論',items:[
+      [rootPath+'sequence.html','🔢','數列計算','sequence-root'],
+      [rootPath+'math-sequence.html','🔢','數列工具中心','sequence'],
+      [rootPath+'math-number.html','🔍','數論工具','number']
+    ]},
+    {title:'📊 數學｜統計與機率',items:[
+      [rootPath+'statistics.html','📊','統計','statistics-root'],
+      [rootPath+'math-statistics.html','📊','統計工具中心','statistics'],
+      [rootPath+'probability.html','🎲','機率','probability'],
+      [rootPath+'combinatorics.html','🎯','排列組合','combinatorics']
+    ]},
+    {title:'🔲 數學｜其他工具',items:[
+      [rootPath+'matrix.html','🔲','矩陣','matrix'],
+      [rootPath+'units.html','📏','單位換算','units']
+    ]},
+    {title:'📚 學習',items:[
+      [rootPath+'education.html','📚','學習中心','education-root'],
+      [rootPath+'highschool-math.html','📚','高中數學基礎教學','education'],
+      [rootPath+'learning-formulas.html','📖','公式大全','formulas'],
+      [rootPath+'practice.html','📝','數學練習題','practice']
+    ]},
+    {title:'⚗️ 化學',items:[
+      [rootPath+'chemistry-category.html','⚗️','化學中心','chemistry-center'],
+      [rootPath+'chemistry.html','⚖️','化學方程式配平','chemistry'],
+      [rootPath+'chemistry-mole.html','⚖️','莫耳計算','mole'],
+      [rootPath+'chemistry-learning.html','📚','高中化學基礎教學','chemistry-learn'],
+      [rootPath+'chemistry-learn.html','🧪','化學教學總覽','chemistry-learn-root']
+    ]},
+    {title:'其他',items:[
+      [rootPath+'history.html','🕘','紀錄','history']
+    ]}
   ];
   const wrap=document.createElement('div');
-  wrap.innerHTML=`<button class="menu-toggle" id="menuToggle" aria-label="開啟功能選單" aria-expanded="false">☰</button><div class="side-overlay" id="sideOverlay"></div><aside class="side-menu" id="sideMenu"><div class="side-brand"><a href="index.html">📐 <span>MathBox</span></a></div><div class="side-title">功能選單</div><nav>${items.map(x=>`<a class="side-link ${page===x[3]?'active':''}" href="${x[0]}"><span class="side-icon">${x[1]}</span><span>${x[2]}</span></a>`).join('')}</nav></aside>`;
+  wrap.innerHTML=`<button class="menu-toggle" id="menuToggle" aria-label="開啟功能選單" aria-expanded="false">☰</button><div class="side-overlay" id="sideOverlay"></div><aside class="side-menu" id="sideMenu"><div class="side-brand"><a href="${rootPath}index.html">📐 <span>MathBox</span></a></div><div class="side-title">功能選單</div><nav>${groups.map(g=>`<div class="side-group"><div class="side-group-title">${g.title}</div>${g.items.map(x=>`<a class="side-link ${page===x[3]?'active':''}" href="${x[0]}"><span class="side-icon">${x[1]}</span><span>${x[2]}</span></a>`).join('')}</div>`).join('')}</nav></aside>`;
   document.body.prepend(wrap);
   const btn=$('menuToggle'), menu=$('sideMenu'), overlay=$('sideOverlay');
   const close=()=>{menu.classList.remove('open');overlay.classList.remove('show');btn.setAttribute('aria-expanded','false')};
   btn.onclick=()=>{const open=menu.classList.toggle('open');overlay.classList.toggle('show',open);btn.setAttribute('aria-expanded',String(open))};
   overlay.onclick=close;
   menu.querySelectorAll('a').forEach(a=>a.addEventListener('click',close));
-  document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
 }
-initSidebar();
 
-// MathBox v6：不用 API Key 的本機數學助手
-// 這裡不是雲端生成式 AI，而是把 MathBox 各工具的核心計算能力集中給助手使用。
 function parseNumberList(text){
   const nums=String(text).replace(/[，、；;]/g,',').split(/\s*,\s*|\s+/).filter(Boolean).map(Number);
   if(!nums.length||nums.some(n=>!Number.isFinite(n))) throw Error('請提供有效的數字，例如 1, 2, 3, 4');
@@ -376,6 +417,7 @@ function initLocalAI(){
   });
 }
 
+initSidebar();
 initLocalAI();
 
 })();

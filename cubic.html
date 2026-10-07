@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="color-scheme" content="dark light">
+<title>📈 三次函數工具｜MathBox</title>
+<link rel="stylesheet" href="style.css?v=8.1">
+</head>
+<body data-page="cubic">
+<header class="site-header">
+  <div><a class="brand" href="index.html">📐 MathBox</a><div class="subtitle">三次函數分析工具</div></div>
+  <button id="themeToggle" class="icon-btn">🌙</button>
+</header>
+<main class="container">
+  <section class="section-title">
+    <div><h1>📈 三次函數</h1><p>分析一般三次函數 f(x)=ax³+bx²+cx+d。</p></div>
+  </section>
+
+  <section class="form-card">
+    <h2>① 輸入係數</h2>
+    <div class="two-col cubic-coeff-grid">
+      <label>a（x³）<input id="a" type="number" step="any" value="1"></label>
+      <label>b（x²）<input id="b" type="number" step="any" value="0"></label>
+      <label>c（x）<input id="c" type="number" step="any" value="-3"></label>
+      <label>d（常數）<input id="d" type="number" step="any" value="0"></label>
+    </div>
+    <div class="formula cubic-main-formula" id="equation">f(x) = x³ − 3x</div>
+    <div class="action-row"><button class="primary" onclick="analyzeCubic()">開始分析</button><button class="secondary" onclick="loadExample()">載入範例</button></div>
+  </section>
+
+  <div class="tool-grid cubic-result-grid">
+    <section class="tool-card"><h2>🔎 基本資訊</h2><div id="basicResult" class="mini-result">按「開始分析」</div></section>
+    <section class="tool-card"><h2>📌 與座標軸交點</h2><div id="interceptResult" class="mini-result">—</div></section>
+    <section class="tool-card"><h2>📐 導數</h2><div id="derivativeResult" class="mini-result">—</div></section>
+    <section class="tool-card"><h2>📈 極值與單調性</h2><div id="extremaResult" class="mini-result">—</div></section>
+    <section class="tool-card"><h2>🔄 反曲點／對稱中心</h2><div id="inflectionResult" class="mini-result">—</div></section>
+    <section class="tool-card"><h2>🧮 判別</h2><div id="rootResult" class="mini-result">—</div></section>
+  </div>
+
+  <section class="canvas-card cubic-canvas-card">
+    <div class="builder-head"><h2>📊 函數圖形</h2><span class="muted">可拖曳圖形查看不同區域</span></div>
+    <canvas id="cubicCanvas" width="900" height="500"></canvas>
+  </section>
+
+  <section class="info-card" style="margin-top:18px">
+    <h2>📚 三次函數重點</h2>
+    <div class="lesson-example">
+      <b>一般式：</b> f(x)=ax³+bx²+cx+d，且 a≠0<br>
+      <b>一階導數：</b> f′(x)=3ax²+2bx+c，用來找極大、極小的可能位置。<br>
+      <b>二階導數：</b> f″(x)=6ax+2b，令 f″(x)=0 可找到反曲點的 x 座標。<br>
+      <b>反曲點：</b> x = −b/(3a)，也是三次函數圖形的對稱中心。<br>
+      <b>y 截距：</b> (0,d)。
+    </div>
+  </section>
+</main>
+<footer>MathBox · 三次函數分析 · GitHub Pages 可直接使用</footer>
+<script>
+const $=id=>document.getElementById(id);
+const num=id=>Number($(id).value);
+const eps=1e-10;
+function clean(n){return Math.abs(n)<1e-9?0:Number(n.toFixed(10));}
+function fmt(n){n=clean(n);return Number.isInteger(n)?String(n):n.toFixed(6).replace(/0+$/,'').replace(/\.$/,'');}
+function term(coef,power){if(Math.abs(coef)<eps)return '';const s=fmt(Math.abs(coef));if(power===0)return s;if(power===1)return (Math.abs(coef)===1?'':s)+'x';return (Math.abs(coef)===1?'':s)+'x³';}
+function equation(a,b,c,d){let parts=[];[[a,3],[b,2],[c,1],[d,0]].forEach(([v,p])=>{if(Math.abs(v)<eps)return;let t=term(v,p);if(!parts.length)parts.push(v<0?'−'+t:t);else parts.push((v<0?' − ':' + ')+t)});return 'f(x) = '+(parts.join('')||'0');}
+function cbrt(x){return Math.cbrt?Math.cbrt(x):Math.sign(x)*Math.pow(Math.abs(x),1/3)}
+function realRoots(a,b,c,d){
+  const A=b/a,B=c/a,C=d/a;
+  const p=B-A*A/3;
+  const q=2*A*A*A/27-A*B/3+C;
+  const disc=q*q/4+p*p*p/27;
+  const shift=A/3;
+  if(disc>1e-10){const s=Math.sqrt(disc);return [clean(cbrt(-q/2+s)+cbrt(-q/2-s)-shift)];}
+  if(Math.abs(disc)<=1e-10){const u=cbrt(-q/2);const r1=clean(2*u-shift),r2=clean(-u-shift);return Math.abs(r1-r2)<1e-8?[r1]:[r1,r2].sort((x,y)=>x-y);}
+  const r=2*Math.sqrt(-p/3);
+  let cosArg=(-q/2)/Math.sqrt(-(p*p*p)/27);cosArg=Math.max(-1,Math.min(1,cosArg));
+  const theta=Math.acos(cosArg)/3;
+  return [0,1,2].map(k=>clean(r*Math.cos(theta-2*Math.PI*k/3)-shift)).sort((x,y)=>x-y);
+}
+function analyzeCubic(){
+ const a=num('a'),b=num('b'),c=num('c'),d=num('d');
+ if(![a,b,c,d].every(Number.isFinite)||Math.abs(a)<eps){$('basicResult').innerHTML='<span class="error">a 不能為 0，否則不是三次函數。</span>';return;}
+ $('equation').textContent=equation(a,b,c,d);
+ const roots=realRoots(a,b,c,d);
+ const disc=18*a*b*c*d-4*b*b*b*d+b*b*c*c-4*a*c*c*c-27*a*a*d*d;
+ $('basicResult').innerHTML=`<b>次數：</b>3<br><b>a：</b>${fmt(a)}<br><b>最高次項：</b>${fmt(a)}x³`;
+ $('interceptResult').innerHTML=`<b>y 軸：</b>(0, ${fmt(d)})<br><b>x 軸實根：</b>${roots.length?roots.map(x=>`(${fmt(x)}, 0)`).join('、'):'無實根'}`;
+ $('derivativeResult').innerHTML=`<b>f′(x)</b> = ${derivativeEquation(a,b,c)}<br><b>f″(x)</b> = ${secondEquation(a,b)}`;
+ const critDisc=b*b-3*a*c;
+ if(critDisc< -eps){$('extremaResult').innerHTML='f′(x)=0 沒有實數解，因此沒有局部極大值或極小值。<br><b>單調性：</b>'+ (a>0?'全程遞增':'全程遞減');}
+ else {
+   const sd=Math.sqrt(Math.max(0,critDisc));
+   const x1=(-b-sd)/(3*a),x2=(-b+sd)/(3*a);
+   if(Math.abs(x1-x2)<1e-8){$('extremaResult').innerHTML=`唯一臨界點 x=${fmt(x1)}，但通常不是極大或極小。<br><b>單調性：</b>${a>0?'全程遞增':'全程遞減'}`;}
+   else {const lo=Math.min(x1,x2),hi=Math.max(x1,x2),ylo=f(a,b,c,d,lo),yhi=f(a,b,c,d,hi);let maxPoint,minPoint;if(a>0){maxPoint=[lo,ylo];minPoint=[hi,yhi]}else{maxPoint=[hi,yhi];minPoint=[lo,ylo]};$('extremaResult').innerHTML=`<b>極大點：</b>(${fmt(maxPoint[0])}, ${fmt(maxPoint[1])})<br><b>極小點：</b>(${fmt(minPoint[0])}, ${fmt(minPoint[1])})<br><b>遞增：</b>${a>0?`x&lt;${fmt(lo)}、x&gt;${fmt(hi)}`:`${fmt(lo)}&lt;x&lt;${fmt(hi)}`}<br><b>遞減：</b>${a>0?`${fmt(lo)}&lt;x&lt;${fmt(hi)}`:`x&lt;${fmt(lo)}、x&gt;${fmt(hi)}`}`;}
+ }
+ const xi=-b/(3*a),yi=f(a,b,c,d,xi);
+ $('inflectionResult').innerHTML=`<b>反曲點：</b>(${fmt(xi)}, ${fmt(yi)})<br><b>對稱中心：</b>(${fmt(xi)}, ${fmt(yi)})<br><b>f″(x)=0：</b>x=${fmt(xi)}`;
+ const rootText=roots.length===1?'只有 1 個實根':roots.length===2?'有 2 個不同實根，其中一個為重根':'有 3 個相異實根';
+ $('rootResult').innerHTML=`<b>三次函數判別式 Δ：</b>${fmt(disc)}<br>${rootText}<br><b>實根：</b>${roots.length?roots.map(fmt).join('、'):'無'}`;
+ draw(a,b,c,d,roots,[...critPoints(a,b,c)]);
+}
+function f(a,b,c,d,x){return ((a*x+b)*x+c)*x+d;}
+function derivativeEquation(a,b,c){let s='';[[3*a,2],[2*b,1],[c,0]].forEach(([v,p])=>{if(Math.abs(v)<eps)return;let t=Math.abs(v)===1&&p>0?'':fmt(Math.abs(v));if(p===2)t+=(t?'':'')+'x²';if(p===1)t+=(t?'':'')+'x';if(!s)s=(v<0?'−':'')+t;else s+=(v<0?' − ':' + ')+t});return s||'0';}
+function secondEquation(a,b){let s=6*a+'x';if(Math.abs(2*b)>eps)s+=(b>=0?' + ':' − ')+fmt(Math.abs(2*b));return s;}
+function critPoints(a,b,c){const disc=b*b-3*a*c;if(disc<=eps)return [];const s=Math.sqrt(disc);return [(-b-s)/(3*a),(-b+s)/(3*a)];}
+function loadExample(){$('a').value=1;$('b').value=-3;$('c').value=0;$('d').value=2;analyzeCubic();}
+function draw(a,b,c,d,roots,crit){const canvas=$('cubicCanvas'),ctx=canvas.getContext('2d');const w=canvas.width,h=canvas.height;ctx.clearRect(0,0,w,h);const xmin=-5,xmax=5,ymin=-12,ymax=12;const X=x=>(x-xmin)/(xmax-xmin)*w;const Y=y=>h-(y-ymin)/(ymax-ymin)*h;ctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--border');ctx.lineWidth=1;for(let x=Math.ceil(xmin);x<=xmax;x++){ctx.beginPath();ctx.moveTo(X(x),0);ctx.lineTo(X(x),h);ctx.stroke()}for(let y=Math.ceil(ymin);y<=ymax;y++){ctx.beginPath();ctx.moveTo(0,Y(y));ctx.lineTo(w,Y(y));ctx.stroke()}ctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--muted');ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(X(0),0);ctx.lineTo(X(0),h);ctx.stroke();ctx.beginPath();ctx.moveTo(0,Y(0));ctx.lineTo(w,Y(0));ctx.stroke();ctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--primary');ctx.lineWidth=3;ctx.beginPath();let started=false;for(let px=0;px<=w;px++){const x=xmin+px/w*(xmax-xmin),y=f(a,b,c,d,x);if(y<ymin-30||y>ymax+30){started=false;continue}if(!started){ctx.moveTo(px,Y(y));started=true}else ctx.lineTo(px,Y(y));}ctx.stroke();ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--danger');roots.forEach(r=>{if(r>=xmin&&r<=xmax){ctx.beginPath();ctx.arc(X(r),Y(0),5,0,Math.PI*2);ctx.fill()}});ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--accent');crit.forEach(x=>{const y=f(a,b,c,d,x);if(x>=xmin&&x<=xmax&&y>=ymin&&y<=ymax){ctx.beginPath();ctx.arc(X(x),Y(y),5,0,Math.PI*2);ctx.fill()}});}
+window.addEventListener('resize',()=>{if(Number.isFinite(num('a'))&&Math.abs(num('a'))>eps) analyzeCubic()});
+analyzeCubic();
+</script>
+<script src="script.js?v=8.1"></script>
+</body>
+</html>
