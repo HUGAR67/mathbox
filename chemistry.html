@@ -1,97 +1,47 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="MathBox 化學方程式配平與元素週期表">
-    <title>🧪 化學方程式配平 | MathBox</title>
-    <link rel="stylesheet" href="./style.css?v=5">
-</head>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><meta name="color-scheme" content="dark light"><meta name="description" content="MathBox 化學方程式配平與互動式元素週期表"><title>化學方程式配平｜MathBox</title><link rel="stylesheet" href="./style.css?v=6.8"></head>
 <body data-page="chemistry">
-    <header class="site-header">
-        <div class="brand">
-            <a href="index.html">📐 MathBox</a>
-            <div class="subtitle">數學 · 科學 · 工具 · 一站式</div>
-        </div>
-        <button id="themeToggle" class="icon-btn" title="切換深色模式">🌙</button>
-    </header>
+<header class="site-header"><div><a class="brand" href="index.html">📐 MathBox</a><div class="subtitle">數學、統計、幾何、化學工具箱</div></div><button id="themeToggle" class="icon-btn" title="切換淺色／深色模式">☀️</button></header>
+<main class="container">
+<section class="section-title"><div><h1>🧪 化學方程式配平</h1><p>最簡單的方式：直接輸入反應式；需要自己組合分子時，再使用下面的週期表。</p></div></section>
 
-    <main class="container">
-        <nav class="tabs">
-            <a class="tab" href="calculator.html">🧮 計算機</a>
-            <a class="tab" href="quadratic.html">🔢 方程式</a>
-            <a class="tab" href="graph.html">📈 函數繪圖</a>
-            <a class="tab" href="analysis.html">📊 數據分析</a>
-            <a class="tab" href="statistics.html">📋 統計</a>
-            <a class="tab" href="units.html">📏 單位換算</a>
-            <a class="tab active" href="chemistry.html">🧪 化學配平</a>
-            <a class="tab" href="history.html">🕒 紀錄</a>
-        </nav>
+<section class="form-card chem-quick-card">
+  <div class="chem-step-title"><span class="chem-step-no">1</span><div><h2>直接輸入，快速配平</h2><p class="muted">例如：H2 + O2 → H2O。使用 →、->、=> 都可以。</p></div></div>
+  <div class="chem-input-row"><input id="chemicalInput" class="big-input" value="H2 + O2 -> H2O" placeholder="輸入化學方程式，例如：Fe + O2 -> Fe2O3"><button id="balanceChemical" class="primary">⚗️ 開始配平</button></div>
+  <div class="chem-examples"><button data-chem="H2 + O2 -> H2O">H₂ + O₂ → H₂O</button><button data-chem="Fe + O2 -> Fe2O3">Fe + O₂ → Fe₂O₃</button><button data-chem="C3H8 + O2 -> CO2 + H2O">C₃H₈ + O₂ → CO₂ + H₂O</button><button data-chem="Al + HCl -> AlCl3 + H2">Al + HCl → AlCl₃ + H₂</button><button data-chem="C6H12O6 + O2 -> CO2 + H2O">C₆H₁₂O₆ + O₂ → CO₂ + H₂O</button></div>
+  <div id="chemicalResult" class="result-box chem-result"></div>
+</section>
 
-        <section class="section-title">
-            <div>
-                <h1>🧪 化學方程式配平</h1>
-                <p>這一頁可以直接點選週期表組成化學式，再加入反應物與生成物；並具備自動配平功能。</p>
-            </div>
-        </section>
+<section class="form-card">
+  <div class="chem-step-title"><span class="chem-step-no">2</span><div><h2>不想打化學式？用互動方式建立</h2><p class="muted">先選「反應物」或「生成物」，再按常用分子或從週期表組合。</p></div></div>
+  <div class="chem-side-buttons"><button class="chem-side active" data-chem-side="left">＋ 加入反應物</button><button class="chem-side" data-chem-side="right">＋ 加入生成物</button><span id="builderSideLabel" class="builder-side-label">目前加入：反應物</span></div>
+  <div class="quick-molecule-row"><span class="muted quick-label">常用分子：</span><button data-quick-formula="H2">H₂</button><button data-quick-formula="O2">O₂</button><button data-quick-formula="H2O">H₂O</button><button data-quick-formula="CO2">CO₂</button><button data-quick-formula="Fe">Fe</button><button data-quick-formula="Fe2O3">Fe₂O₃</button><button data-quick-formula="C3H8">C₃H₈</button><button data-quick-formula="HCl">HCl</button><button data-quick-formula="Al">Al</button><button data-quick-formula="AlCl3">AlCl₃</button></div>
 
-        <div class="chem-layout">
-            <div class="form-card chem-builder">
-                <div class="builder-head">
-                    <h2>① 用週期表組成分子</h2>
-                </div>
-                <div class="side-switch">
-                    <label><input type="radio" name="chemSide" value="left" checked> 反應物</label>
-                    <label><input type="radio" name="chemSide" value="right"> 生成物</label>
-                </div>
-                <div id="selectedElement" class="selected-element">尚未選擇元素</div>
-                <div class="subscript-row">
-                    <label>下標 <input id="elementCount" type="number" min="1" max="99" value="1"></label>
-                    <button id="addElement" class="primary">加入元素</button>
-                    <button id="clearMolecule" class="secondary">清空分子</button>
-                </div>
-                <div class="current-mol-box">
-                    <h3>目前分子：<span id="currentMoleculeText">—</span></h3>
-                </div>
-                <button id="addFormula" class="primary full">＋ 把目前分子加入反應式</button>
-                <div class="equation-preview">
-                    <div class="side-list">
-                        <h4>反應物</h4>
-                        <div id="leftMolecules" class="molecule-list"></div>
-                    </div>
-                    <div class="arrow">➔</div>
-                    <div class="side-list">
-                        <h4>生成物</h4>
-                        <div id="rightMolecules" class="molecule-list"></div>
-                    </div>
-                </div>
-                <button id="balanceBuilt" class="primary full">🧪 配平目前反應式</button>
-                <div id="builtResult" class="result-box"></div>
-            </div>
+  <div class="reaction-builder reaction-builder-v2">
+    <div class="reaction-side"><div class="reaction-side-head"><h3>反應物</h3><span class="side-tag">左邊</span></div><div id="leftMolecules" class="molecule-list"></div></div>
+    <div class="arrow">→</div>
+    <div class="reaction-side"><div class="reaction-side-head"><h3>生成物</h3><span class="side-tag">右邊</span></div><div id="rightMolecules" class="molecule-list"></div></div>
+  </div>
 
-            <div class="chem-card periodic-wrap">
-                <h2>② 點選元素</h2>
-                <p class="muted">元素符號、原子序與名稱均依據 IUPAC 週期表標準整理。</p>
-                <div id="periodicTable" class="periodic-table"></div>
-                <div class="lanth-actinide-note">鑭系與錒系亦可配平</div>
-            </div>
+  <div class="molecule-builder-box">
+    <div class="builder-mini-head"><h3>自己組合一個分子</h3><span class="muted">點元素 → 設定下標 → 加入元素</span></div>
+    <div id="selectedElement" class="selected-element">尚未選擇元素</div>
+    <div class="subscript-row"><label>下標<input id="elementCount" type="number" min="1" max="99" value="1"></label><button id="addElement" class="primary">＋ 加入元素</button><button id="clearMolecule" class="secondary">清空目前分子</button></div>
+    <div class="molecule-preview" id="moleculePreview">目前分子：—</div>
+    <div class="builder-add-row"><button id="addToLeft" class="secondary">加入反應物 ←</button><button id="addToRight" class="secondary">→ 加入生成物</button></div>
+  </div>
 
-            <div class="form-card">
-                <h2>直接輸入也可以</h2>
-                <input id="chemicalInput" class="big-input" value="C6H12O6 + O2 -> CO2 + H2O" placeholder="例如：C6H12O6 + O2 -> CO2 + H2O">
-                <div class="chem-examples">
-                    <button data-chem="H2 + O2 -> H2O">H₂ + O₂ ➔ H₂O</button>
-                    <button data-chem="Fe + O2 -> Fe2O3">Fe + O₂ ➔ Fe₂O₃</button>
-                    <button data-chem="C3H8 + O2 -> CO2 + H2O">C₃H₈ + O₂ ➔ CO₂ + H₂O</button>
-                    <button data-chem="Al + HCl -> AlCl3 + H2">Al + HCl ➔ AlCl₃ + H₂</button>
-                    <button data-chem="C6H12O6 + O2 -> CO2 + H2O">C₆H₁₂O₆ + O₂ ➔ CO₂ + H₂O</button>
-                </div>
-                <button id="balanceInput" class="primary full">🧪 開始配平</button>
-                <div id="inputResult" class="result-box"></div>
-            </div>
-        </div>
-    </main>
-    <script src="./script.js"></script>
-</body>
-</html>
+  <div class="reaction-actions"><button id="balanceBuilt" class="primary">⚗️ 配平這個反應式</button><button id="swapReaction" class="secondary">⇄ 交換左右</button><button id="clearReaction" class="secondary">清除全部</button></div>
+  <div id="builtResult" class="result-box"></div>
+</section>
 
+<section class="form-card periodic-wrap">
+  <div class="chem-step-title"><span class="chem-step-no">3</span><div><h2>點選元素</h2><p class="muted">標準 18 族週期表；直接點元素即可選取。鑭系與錒系用範圍欄位表示。IUPAC 的現行週期表採 conventional long form，並使用 1–18 族編號。citeturn0search0</p></div></div>
+  <input id="elementSearch" class="element-search" placeholder="搜尋元素，例如 H、O、Fe、氧、鐵…">
+  <div id="periodicTable" class="periodic-table"></div><div class="periodic-legend">
+<span><i class="alkali"></i>鹼金屬</span><span><i class="alkaline"></i>鹼土金屬</span><span><i class="transition"></i>過渡金屬</span><span><i class="post"></i>後過渡金屬</span><span><i class="metalloid"></i>類金屬</span><span><i class="nonmetal"></i>非金屬</span><span><i class="halogen"></i>鹵素</span><span><i class="noble"></i>惰性氣體</span><span><i class="lanthanide"></i>鑭系</span><span><i class="actinide"></i>錒系</span></div><div class="lanth-note">鑭系與錒系也可直接點選。</div>
+</section>
+</main>
+<footer>MathBox · 純 HTML / CSS / JavaScript · GitHub Pages 可直接使用</footer>
+<script src="./script.js?v=6.8"></script></body></html>

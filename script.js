@@ -5,8 +5,8 @@ const $=id=>document.getElementById(id);
 const fmt=n=>Number.isFinite(n)?(Math.abs(n)<1e-12?0:Number(n.toFixed(10))).toString():String(n);
 const esc=s=>String(s).replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]));
 const HIST='mathbox-history-v5'; let angleDeg=true, seqType='arith';
-const theme=localStorage.getItem('mathbox-theme'); if(theme==='dark') document.body.classList.add('dark');
-if($('themeToggle')){$('themeToggle').textContent=document.body.classList.contains('dark')?'☀️':'🌙';$('themeToggle').onclick=()=>{document.body.classList.toggle('dark');localStorage.setItem('mathbox-theme',document.body.classList.contains('dark')?'dark':'light');$('themeToggle').textContent=document.body.classList.contains('dark')?'☀️':'🌙';if(typeof drawGraph==='function')drawGraph()}}
+const THEME_KEY='mathbox-theme-v2'; const theme=localStorage.getItem(THEME_KEY); if(theme==='light') document.body.classList.add('light');
+if($('themeToggle')){$('themeToggle').textContent=document.body.classList.contains('light')?'🌙':'☀️';$('themeToggle').onclick=()=>{document.body.classList.toggle('light');const isLight=document.body.classList.contains('light');localStorage.setItem(THEME_KEY,isLight?'light':'dark');$('themeToggle').textContent=isLight?'🌙':'☀️';if(typeof drawGraph==='function')drawGraph()}}
 function addHistory(type,input,result){let h=JSON.parse(localStorage.getItem(HIST)||'[]');h.unshift({type,input,result,time:new Date().toLocaleString('zh-TW')});localStorage.setItem(HIST,JSON.stringify(h.slice(0,100)));if($('historyList'))renderHistory()}
 function renderHistory(){const h=JSON.parse(localStorage.getItem(HIST)||'[]');$('historyList').innerHTML=h.length?h.map((x,i)=>`<div class="history-item"><div><div class="history-value">${esc(x.type)}：${esc(x.input)}</div><div>${esc(x.result)}</div><div class="history-meta">${esc(x.time)}</div></div><button class="secondary" data-del-history="${i}">刪除</button></div>`).join(''):'<div class="empty">目前沒有計算紀錄</div>';document.querySelectorAll('[data-del-history]').forEach(b=>b.onclick=()=>{let a=JSON.parse(localStorage.getItem(HIST)||'[]');a.splice(+b.dataset.delHistory,1);localStorage.setItem(HIST,JSON.stringify(a));renderHistory()})}
 if($('historyList')){renderHistory();$('clearHistory').onclick=()=>{if(confirm('確定要清除全部紀錄嗎？')){localStorage.removeItem(HIST);renderHistory()}}}
@@ -19,7 +19,7 @@ if($('solveQuadratic'))$('solveQuadratic').onclick=()=>{const a=+$('qa').value,b
 let canvas,ctx,view={xmin:-10,xmax:10,ymin:-10,ymax:10};
 function niceStep(v){const p=10**Math.floor(Math.log10(v||1)),q=v/p;return(q<=1?1:q<=2?2:q<=5?5:10)*p}
 function syncView(){view.xmin=+$('xMin').value;view.xmax=+$('xMax').value;view.ymin=+$('yMin').value;view.ymax=+$('yMax').value}
-function drawGraph(){if(!$('graphCanvas'))return;canvas=$('graphCanvas');ctx=canvas.getContext('2d');try{syncView();if(!(view.xmax>view.xmin&&view.ymax>view.ymin))throw Error('座標範圍無效');const w=canvas.width,h=canvas.height,dark=document.body.classList.contains('dark'),grid=dark?'#334056':'#dfe6ef',axis=dark?'#e8edf7':'#334155',text=dark?'#aeb9cc':'#64748b',X=x=>(x-view.xmin)/(view.xmax-view.xmin)*w,Y=y=>h-(y-view.ymin)/(view.ymax-view.ymin)*h;ctx.clearRect(0,0,w,h);ctx.strokeStyle=grid;ctx.lineWidth=1;const sx=niceStep((view.xmax-view.xmin)/10),sy=niceStep((view.ymax-view.ymin)/10);for(let x=Math.ceil(view.xmin/sx)*sx;x<=view.xmax;x+=sx){ctx.beginPath();ctx.moveTo(X(x),0);ctx.lineTo(X(x),h);ctx.stroke()}for(let y=Math.ceil(view.ymin/sy)*sy;y<=view.ymax;y+=sy){ctx.beginPath();ctx.moveTo(0,Y(y));ctx.lineTo(w,Y(y));ctx.stroke()}ctx.strokeStyle=axis;ctx.lineWidth=1.5;if(view.xmin<=0&&view.xmax>=0){ctx.beginPath();ctx.moveTo(X(0),0);ctx.lineTo(X(0),h);ctx.stroke()}if(view.ymin<=0&&view.ymax>=0){ctx.beginPath();ctx.moveTo(0,Y(0));ctx.lineTo(w,Y(0));ctx.stroke()}ctx.fillStyle=text;ctx.font='12px sans-serif';const expr=$('functionInput').value;ctx.strokeStyle='#4169e1';ctx.lineWidth=2.5;ctx.beginPath();let started=false,prev=null;for(let px=0;px<w;px++){const x=view.xmin+(view.xmax-view.xmin)*px/(w-1);let y;try{y=evaluateExpression(expr,x)}catch{continue}if(Math.abs(y)>1e7){started=false;prev=null;continue}const py=Y(y);if(!started||prev===null||Math.abs(py-prev)>h*1.5){ctx.moveTo(px,py);started=true}else ctx.lineTo(px,py);prev=py}ctx.stroke();$('graphMessage').textContent=''}catch(e){$('graphMessage').textContent=e.message}}
+function drawGraph(){if(!$('graphCanvas'))return;canvas=$('graphCanvas');ctx=canvas.getContext('2d');try{syncView();if(!(view.xmax>view.xmin&&view.ymax>view.ymin))throw Error('座標範圍無效');const w=canvas.width,h=canvas.height,dark=!document.body.classList.contains('light'),grid=dark?'#334056':'#dfe6ef',axis=dark?'#e8edf7':'#334155',text=dark?'#aeb9cc':'#64748b',X=x=>(x-view.xmin)/(view.xmax-view.xmin)*w,Y=y=>h-(y-view.ymin)/(view.ymax-view.ymin)*h;ctx.clearRect(0,0,w,h);ctx.strokeStyle=grid;ctx.lineWidth=1;const sx=niceStep((view.xmax-view.xmin)/10),sy=niceStep((view.ymax-view.ymin)/10);for(let x=Math.ceil(view.xmin/sx)*sx;x<=view.xmax;x+=sx){ctx.beginPath();ctx.moveTo(X(x),0);ctx.lineTo(X(x),h);ctx.stroke()}for(let y=Math.ceil(view.ymin/sy)*sy;y<=view.ymax;y+=sy){ctx.beginPath();ctx.moveTo(0,Y(y));ctx.lineTo(w,Y(y));ctx.stroke()}ctx.strokeStyle=axis;ctx.lineWidth=1.5;if(view.xmin<=0&&view.xmax>=0){ctx.beginPath();ctx.moveTo(X(0),0);ctx.lineTo(X(0),h);ctx.stroke()}if(view.ymin<=0&&view.ymax>=0){ctx.beginPath();ctx.moveTo(0,Y(0));ctx.lineTo(w,Y(0));ctx.stroke()}ctx.fillStyle=text;ctx.font='12px sans-serif';const expr=$('functionInput').value;ctx.strokeStyle='#4169e1';ctx.lineWidth=2.5;ctx.beginPath();let started=false,prev=null;for(let px=0;px<w;px++){const x=view.xmin+(view.xmax-view.xmin)*px/(w-1);let y;try{y=evaluateExpression(expr,x)}catch{continue}if(Math.abs(y)>1e7){started=false;prev=null;continue}const py=Y(y);if(!started||prev===null||Math.abs(py-prev)>h*1.5){ctx.moveTo(px,py);started=true}else ctx.lineTo(px,py);prev=py}ctx.stroke();$('graphMessage').textContent=''}catch(e){$('graphMessage').textContent=e.message}}
 if($('graphCanvas')){canvas=$('graphCanvas');ctx=canvas.getContext('2d');$('drawGraph').onclick=drawGraph;$('resetGraph').onclick=()=>{$('functionInput').value='x^2-4';$('xMin').value=-10;$('xMax').value=10;$('yMin').value=-10;$('yMax').value=10;drawGraph()};document.querySelectorAll('[data-insert]').forEach(b=>b.onclick=()=>{$('functionInput').value+=b.dataset.insert;drawGraph()});let drag=false,last={x:0,y:0};canvas.onpointerdown=e=>{drag=true;last={x:e.clientX,y:e.clientY};canvas.setPointerCapture(e.pointerId)};canvas.onpointermove=e=>{if(!drag)return;const dx=e.clientX-last.x,dy=e.clientY-last.y,sx=(view.xmax-view.xmin)/canvas.clientWidth,sy=(view.ymax-view.ymin)/canvas.clientHeight;view.xmin-=dx*sx;view.xmax-=dx*sx;view.ymin+=dy*sy;view.ymax+=dy*sy;$('xMin').value=view.xmin;$('xMax').value=view.xmax;$('yMin').value=view.ymin;$('yMax').value=view.ymax;last={x:e.clientX,y:e.clientY};drawGraph()};canvas.onpointerup=()=>drag=false;canvas.ondblclick=()=>$('resetGraph').click();canvas.onwheel=e=>{e.preventDefault();syncView();const f=e.deltaY<0?.82:1.22,r=canvas.getBoundingClientRect(),mx=(e.clientX-r.left)/r.width,my=(e.clientY-r.top)/r.height,cx=view.xmin+mx*(view.xmax-view.xmin),cy=view.ymax-my*(view.ymax-view.ymin);view.xmin=cx+(view.xmin-cx)*f;view.xmax=cx+(view.xmax-cx)*f;view.ymin=cy+(view.ymin-cy)*f;view.ymax=cy+(view.ymax-cy)*f;$('xMin').value=view.xmin;$('xMax').value=view.xmax;$('yMin').value=view.ymin;$('yMax').value=view.ymax;drawGraph()};drawGraph()}
 if($('analyzeFunction'))$('analyzeFunction').onclick=()=>{const expr=$('analysisInput').value,a=+$('analysisMin').value,b=+$('analysisMax').value,r=$('analysisResult');if(!(b>a)){r.innerHTML='<span class="error">分析範圍無效。</span>';return}try{let min={x:a,y:Infinity},max={x:a,y:-Infinity},roots=[];const N=2000,dx=(b-a)/N;let prevX=a,prevY=evaluateExpression(expr,a);for(let i=0;i<=N;i++){const x=a+i*dx;let y;try{y=evaluateExpression(expr,x)}catch{continue}if(Number.isFinite(y)){if(y<min.y)min={x,y};if(y>max.y)max={x,y};if(i>0&&prevY*y<0){let lo=prevX,hi=x;for(let k=0;k<35;k++){const mid=(lo+hi)/2,ym=evaluateExpression(expr,mid);if(prevY*ym<=0)hi=mid;else{lo=mid;prevY=ym}}roots.push((lo+hi)/2)}prevX=x;prevY=y}}let h=`<div>近似最小值：(${fmt(min.x)}, ${fmt(min.y)})</div><div>近似最大值：(${fmt(max.x)}, ${fmt(max.y)})</div><div>x 截距：${roots.length?roots.map(fmt).join('、'):'未找到'}</div><div>y 截距：${fmt(evaluateExpression(expr,0))}</div>`;const m=expr.match(/^\s*([+-]?\d*\.?\d+)\*?x\^2\s*([+-]\s*\d*\.?\d+)?\*?x?\s*([+-]\s*\d*\.?\d+)?\s*$/);if(m){const A=parseFloat(m[1]),B=m[2]?parseFloat(m[2].replace(/\s/g,'')):0,C=m[3]?parseFloat(m[3].replace(/\s/g,'')):0;const xv=-B/(2*A),yv=A*xv*xv+B*xv+C;h+=`<div>二次函數頂點：(${fmt(xv)}, ${fmt(yv)})</div><div>對稱軸：x = ${fmt(xv)}</div>`}r.innerHTML=h;addHistory('函數分析',expr,h.replace(/<[^>]+>/g,' '))}catch(e){r.innerHTML='<span class="error">'+esc(e.message)+'</span>'}};
 if($('calcStats'))$('calcStats').onclick=()=>{const a=$('statsInput').value.split(/[\s,，]+/).map(Number).filter(Number.isFinite);const r=$('statsResult');if(!a.length){r.innerHTML='<span class="error">請輸入數字。</span>';return}a.sort((x,y)=>x-y);const n=a.length,mean=a.reduce((s,x)=>s+x,0)/n,median=n%2?a[(n-1)/2]:(a[n/2-1]+a[n/2])/2,modeMap={};a.forEach(x=>modeMap[x]=(modeMap[x]||0)+1);const maxF=Math.max(...Object.values(modeMap)),modes=maxF>1?Object.keys(modeMap).filter(x=>modeMap[x]===maxF):[];const popVar=a.reduce((s,x)=>s+(x-mean)**2,0)/n,sample=n>1?popVar*n/(n-1):NaN;r.innerHTML=`<div>筆數：${n}</div><div>平均數：${fmt(mean)}</div><div>中位數：${fmt(median)}</div><div>眾數：${modes.length?modes.join('、'):'無重複眾數'}</div><div>最小：${fmt(a[0])}　最大：${fmt(a[n-1])}</div><div>母體變異數：${fmt(popVar)}</div><div>樣本變異數：${fmt(sample)}</div><div>母體標準差：${fmt(Math.sqrt(popVar))}</div>`;addHistory('統計',$('statsInput').value,r.textContent)};
@@ -58,6 +58,324 @@ function renderMolecule(){if(!$('moleculePreview'))return;const text=currentForm
 function buildFormula(){return currentFormula.map(x=>x.symbol+(x.count===1?'':x.count)).join('')}
 function renderMolecules(){for(const side of ['left','right']){$(side+'Molecules').innerHTML=(window[side+'Molecules']||[]).map((f,i)=>`<span class="molecule-chip">${prettyFormula(f)} <button data-remove="${side}:${i}" class="mini-x">×</button></span>`).join('')||'<span class="muted">尚無分子</span>'}document.querySelectorAll('[data-remove]').forEach(b=>b.onclick=()=>{const [s,i]=b.dataset.remove.split(':');window[s+'Molecules'].splice(+i,1);renderMolecules()})}
 let leftMolecules=[],rightMolecules=[];window.leftMolecules=leftMolecules;window.rightMolecules=rightMolecules;
-function initPeriodic(){const p=$('periodicTable');if(!p)return;const map=new Map(elements.map(e=>[e[0],e]));for(let z=1;z<=118;z++){const e=elements[z-1];const div=document.createElement('button');div.className='element';div.type='button';div.dataset.symbol=e[0];div.style.gridColumn=e[3];div.style.gridRow=e[4];div.innerHTML=`<span class="z">${e[2]}</span><span class="sym">${e[0]}</span><span class="ename">${e[1]}</span>`;div.onclick=()=>{$('selectedElement').textContent=`已選：${e[0]} ${e[1]}（${e[2]}）`; $('elementCount').focus(); $('elementCount').select();$('addElement').dataset.symbol=e[0]};p.appendChild(div)} }
-if($('periodicTable')){initPeriodic();document.querySelectorAll('input[name="chemSide"]').forEach(x=>x.onchange=()=>selectedSide=x.value);$('addElement').onclick=()=>{const s=$('addElement').dataset.symbol;if(!s){$('selectedElement').textContent='請先點選週期表中的元素';return}const n=Math.max(1,Math.min(99,parseInt($('elementCount').value)||1));currentFormula.push({symbol:s,count:n});renderMolecule()};$('clearMolecule').onclick=()=>{currentFormula=[];renderMolecule()};$('addMolecule').onclick=()=>{try{const f=buildFormula();if(!f)throw Error('目前分子是空的');(selectedSide==='left'?leftMolecules:rightMolecules).push(f);currentFormula=[];renderMolecule();renderMolecules();$('builtResult').innerHTML='<div class="success">已加入 '+prettyFormula(f)+'，可以繼續建立下一個分子。</div>'}catch(e){$('builtResult').innerHTML='<span class="error">'+esc(e.message)+'</span>'}};$('balanceBuilt').onclick=()=>{try{if(!leftMolecules.length||!rightMolecules.length)throw Error('請先把反應物與生成物都加入反應式');showBalanced(balanceEquation(leftMolecules.join('+')+'->'+rightMolecules.join('+')),$('builtResult'))}catch(e){$('builtResult').innerHTML='<span class="error">'+esc(e.message)+'</span>'}};renderMolecule();renderMolecules()}
+function elementCategory(symbol){
+  const categories={
+    alkali:['Li','Na','K','Rb','Cs','Fr'],
+    alkaline:['Be','Mg','Ca','Sr','Ba','Ra'],
+    transition:['Sc','Ti','V','Cr','Mn','Fe','Co','Ni','Cu','Zn','Y','Zr','Nb','Mo','Tc','Ru','Rh','Pd','Ag','Cd','Hf','Ta','W','Re','Os','Ir','Pt','Au','Hg','Rf','Db','Sg','Bh','Hs','Mt','Ds','Rg','Cn'],
+    post:['Al','Ga','In','Sn','Tl','Pb','Bi','Po','Nh','Fl','Mc','Lv'],
+    metalloid:['B','Si','Ge','As','Sb','Te'],
+    nonmetal:['H','C','N','O','P','S','Se'],
+    halogen:['F','Cl','Br','I','At','Ts'],
+    noble:['He','Ne','Ar','Kr','Xe','Rn','Og'],
+    lanthanide:['La','Ce','Pr','Nd','Pm','Sm','Eu','Gd','Tb','Dy','Ho','Er','Tm','Yb','Lu'],
+    actinide:['Ac','Th','Pa','U','Np','Pu','Am','Cm','Bk','Cf','Es','Fm','Md','No','Lr']
+  };
+  for(const [name,list] of Object.entries(categories)) if(list.includes(symbol)) return name;
+  return 'unknown';
+}
+function initPeriodic(){const p=$('periodicTable');if(!p)return;const map=new Map(elements.map(e=>[e[0],e]));for(let z=1;z<=118;z++){const e=elements[z-1];const div=document.createElement('button');div.type='button';div.style.gridColumn=e[3];div.style.gridRow=e[4];if(z===57||z===89){div.className='element element-series-placeholder';div.disabled=true;div.innerHTML=z===57?'<span class="z">57~71</span><span class="sym">鑭系</span><span class="ename">La–Lu</span>':'<span class="z">89~103</span><span class="sym">錒系</span><span class="ename">Ac–Lr</span>';}else{div.className='element element-'+elementCategory(e[0]);div.dataset.symbol=e[0];div.innerHTML=`<span class="z">${e[2]}</span><span class="sym">${e[0]}</span><span class="ename">${e[1]}</span>`;div.onclick=()=>{$('selectedElement').textContent=`已選：${e[0]} ${e[1]}（${e[2]}）`; $('elementCount').focus(); $('elementCount').select();$('addElement').dataset.symbol=e[0]};}p.appendChild(div)} }
+if($('periodicTable')){
+  initPeriodic();
+  const setSide=side=>{
+    selectedSide=side;
+    document.querySelectorAll('[data-chem-side]').forEach(b=>b.classList.toggle('active',b.dataset.chemSide===side));
+    const label=side==='left'?'反應物':'生成物';
+    if($('builderSideLabel'))$('builderSideLabel').textContent='目前加入：'+label;
+  };
+  document.querySelectorAll('[data-chem-side]').forEach(b=>b.onclick=()=>setSide(b.dataset.chemSide));
+  setSide('left');
+  const addCurrentToSide=(side)=>{
+    const f=buildFormula();
+    if(!f)throw Error('目前分子是空的，請先點元素建立分子。');
+    (side==='left'?leftMolecules:rightMolecules).push(f);
+    currentFormula=[];
+    renderMolecule();
+    renderMolecules();
+    $('builtResult').innerHTML='<div class="success">已加入 '+prettyFormula(f)+'。</div>';
+  };
+  $('addElement').onclick=()=>{
+    const s=$('addElement').dataset.symbol;
+    if(!s){$('selectedElement').textContent='請先點選週期表中的元素';return}
+    const n=Math.max(1,Math.min(99,parseInt($('elementCount').value)||1));
+    currentFormula.push({symbol:s,count:n});
+    renderMolecule();
+  };
+  $('clearMolecule').onclick=()=>{currentFormula=[];renderMolecule();$('builtResult').innerHTML=''};
+  document.querySelectorAll('[data-quick-formula]').forEach(b=>b.onclick=()=>{
+    try{const f=b.dataset.quickFormula;(selectedSide==='left'?leftMolecules:rightMolecules).push(f);renderMolecules();$('builtResult').innerHTML='<div class="success">已加入 '+prettyFormula(f)+' 到 '+(selectedSide==='left'?'反應物':'生成物')+'。</div>'}catch(e){$('builtResult').innerHTML='<span class="error">'+esc(e.message)+'</span>'}
+  });
+  $('addToLeft').onclick=()=>{try{addCurrentToSide('left')}catch(e){$('builtResult').innerHTML='<span class="error">'+esc(e.message)+'</span>'}};
+  $('addToRight').onclick=()=>{try{addCurrentToSide('right')}catch(e){$('builtResult').innerHTML='<span class="error">'+esc(e.message)+'</span>'}};
+  $('clearReaction').onclick=()=>{leftMolecules.length=0;rightMolecules.length=0;currentFormula=[];renderMolecule();renderMolecules();$('builtResult').innerHTML=''};
+  $('swapReaction').onclick=()=>{[leftMolecules,rightMolecules]=[rightMolecules,leftMolecules];window.leftMolecules=leftMolecules;window.rightMolecules=rightMolecules;renderMolecules()};
+  $('balanceBuilt').onclick=()=>{try{if(!leftMolecules.length||!rightMolecules.length)throw Error('請先把反應物與生成物都加入反應式');showBalanced(balanceEquation(leftMolecules.join('+')+'->'+rightMolecules.join('+')),$('builtResult'))}catch(e){$('builtResult').innerHTML='<span class="error">'+esc(e.message)+'</span>'}};
+  const filter=$('elementSearch');
+  if(filter)filter.oninput=()=>{const q=filter.value.trim().toLowerCase();document.querySelectorAll('#periodicTable .element').forEach(b=>{const e=elements.find(x=>x[0]===b.dataset.symbol);b.style.display=!q||e[0].toLowerCase().includes(q)||e[1].toLowerCase().includes(q)?'':'none'})};
+  renderMolecule();renderMolecules();
+}
+
+// MathBox v6：左側功能選單
+function initSidebar(){
+  if(document.querySelector('.side-menu')) return;
+  const page=document.body.dataset.page||'';
+  const items=[
+    ['index.html','🏠','首頁',''],
+    ['calculator.html','🧮','計算機','calculator'],
+    ['quadratic.html','🔢','方程式','quadratic'],
+    ['graph.html','📈','函數繪圖','graph'],
+    ['analysis.html','📊','函數分析','analysis'],
+    ['statistics.html','📊','統計','statistics'],
+    ['matrix.html','🔲','矩陣','matrix'],
+    ['combinatorics.html','🎯','排列組合','combinatorics'],
+    ['probability.html','🎲','機率','probability'],
+    ['geometry.html','📐','幾何','geometry'],
+    ['sequence.html','🔢','數列','sequence'],
+    ['units.html','📏','單位換算','units'],
+    ['chemistry.html','🧪','化學配平','chemistry'],
+    ['history.html','🕘','紀錄','history'],
+    ['ai.html','🤖','AI 數學助手','ai']
+  ];
+  const wrap=document.createElement('div');
+  wrap.innerHTML=`<button class="menu-toggle" id="menuToggle" aria-label="開啟功能選單" aria-expanded="false">☰</button><div class="side-overlay" id="sideOverlay"></div><aside class="side-menu" id="sideMenu"><div class="side-brand"><a href="index.html">📐 <span>MathBox</span></a></div><div class="side-title">功能選單</div><nav>${items.map(x=>`<a class="side-link ${page===x[3]?'active':''}" href="${x[0]}"><span class="side-icon">${x[1]}</span><span>${x[2]}</span></a>`).join('')}</nav></aside>`;
+  document.body.prepend(wrap);
+  const btn=$('menuToggle'), menu=$('sideMenu'), overlay=$('sideOverlay');
+  const close=()=>{menu.classList.remove('open');overlay.classList.remove('show');btn.setAttribute('aria-expanded','false')};
+  btn.onclick=()=>{const open=menu.classList.toggle('open');overlay.classList.toggle('show',open);btn.setAttribute('aria-expanded',String(open))};
+  overlay.onclick=close;
+  menu.querySelectorAll('a').forEach(a=>a.addEventListener('click',close));
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
+}
+initSidebar();
+
+// MathBox v6：不用 API Key 的本機數學助手
+// 這裡不是雲端生成式 AI，而是把 MathBox 各工具的核心計算能力集中給助手使用。
+function parseNumberList(text){
+  const nums=String(text).replace(/[，、；;]/g,',').split(/\s*,\s*|\s+/).filter(Boolean).map(Number);
+  if(!nums.length||nums.some(n=>!Number.isFinite(n))) throw Error('請提供有效的數字，例如 1, 2, 3, 4');
+  return nums;
+}
+function statAnswer(nums){
+  const a=[...nums].sort((x,y)=>x-y), n=a.length, sum=a.reduce((x,y)=>x+y,0), mean=sum/n;
+  const median=n%2?a[(n-1)/2]:(a[n/2-1]+a[n/2])/2;
+  const freq=new Map(); a.forEach(x=>freq.set(x,(freq.get(x)||0)+1));
+  const maxf=Math.max(...freq.values()); const modes=maxf>1?[...freq].filter(([,f])=>f===maxf).map(([x])=>x):[];
+  const variance=a.reduce((s,x)=>s+(x-mean)**2,0)/n;
+  return `統計結果\n平均數：${fmt(mean)}\n中位數：${fmt(median)}\n${modes.length?'眾數：'+modes.map(fmt).join('、')+'\n':''}最小值：${fmt(a[0])}\n最大值：${fmt(a[n-1])}\n全距：${fmt(a[n-1]-a[0])}\n母體變異數：${fmt(variance)}\n母體標準差：${fmt(Math.sqrt(variance))}`;
+}
+function factorialBig(n){
+  if(!Number.isInteger(n)||n<0||n>170) throw Error('n 必須是 0～170 的整數');
+  return factorial(n);
+}
+function nPr(n,r){if(!Number.isInteger(n)||!Number.isInteger(r)||n<0||r<0||r>n)throw Error('請確認 n、r 為整數且 0 ≤ r ≤ n');return factorialBig(n)/factorialBig(n-r)}
+function nCr(n,r){return nPr(n,r)/factorialBig(r)}
+function solveLinearText(raw){
+  const eq=raw.match(/(?:解|solve)?\s*(-?\d+(?:\.\d+)?)\s*x\s*([+-])\s*(\d+(?:\.\d+)?)\s*=\s*(-?\d+(?:\.\d+)?)/i);
+  if(!eq)return null;
+  const a=Number(eq[1]), b=(eq[2]==='-'?-1:1)*Number(eq[3]), c=Number(eq[4]);
+  if(a===0)return '這不是一次方程式，因為 x 的係數不能是 0。';
+  const x=(c-b)/a;
+  return `解題：\n${a}x ${b>=0?'+ ': '- '}${Math.abs(b)} = ${c}\n${a}x = ${fmt(c-b)}\nx = ${fmt(x)}`;
+}
+function solveQuadraticText(raw){
+  let m=raw.match(/(?:解|solve)?\s*(-?\d+(?:\.\d+)?)\s*x\^?2\s*([+-])\s*(\d+(?:\.\d+)?)\s*x\s*([+-])\s*(\d+(?:\.\d+)?)\s*=\s*0/i);
+  if(!m)return null;
+  const a=Number(m[1]), b=(m[2]==='-'?-1:1)*Number(m[3]), c=(m[4]==='-'?-1:1)*Number(m[5]);
+  if(a===0)return solveLinearText(`${b}x ${c>=0?'+':''}${c}=0`);
+  const D=b*b-4*a*c;
+  if(D<0)return `判別式 Δ = ${fmt(D)}\n沒有實數根。`;
+  if(D===0)return `判別式 Δ = 0\n重根：x = ${fmt(-b/(2*a))}`;
+  return `判別式 Δ = ${fmt(D)}\nx₁ = ${fmt((-b+Math.sqrt(D))/(2*a))}\nx₂ = ${fmt((-b-Math.sqrt(D))/(2*a))}`;
+}
+function geometryText(raw){
+  let m=raw.match(/(?:三角形).*?(?:底|base)\s*[=:：]?\s*(-?\d+(?:\.\d+)?)\D+(?:高|height)\s*[=:：]?\s*(-?\d+(?:\.\d+)?)/i);
+  if(m)return `三角形面積 = ${fmt(Number(m[1])*Number(m[2])/2)}`;
+  m=raw.match(/(?:梯形).*?(?:上底|a)\s*[=:：]?\s*(-?\d+(?:\.\d+)?)\D+(?:下底|b)\s*[=:：]?\s*(-?\d+(?:\.\d+)?)\D+(?:高|height|h)\s*[=:：]?\s*(-?\d+(?:\.\d+)?)/i);
+  if(m)return `梯形面積 = (上底＋下底)×高÷2 = ${fmt((Number(m[1])+Number(m[2]))*Number(m[3])/2)}`;
+  m=raw.match(/(?:圓|圓形).*?(?:半徑|radius|r)\s*[=:：]?\s*(-?\d+(?:\.\d+)?)/i);
+  if(m){const r=Number(m[1]);return `圓面積 = πr² = ${fmt(Math.PI*r*r)}\n圓周長 = 2πr = ${fmt(2*Math.PI*r)}`}
+  m=raw.match(/(?:長方形|矩形).*?(?:長)\s*[=:：]?\s*(-?\d+(?:\.\d+)?)\D+(?:寬)\s*[=:：]?\s*(-?\d+(?:\.\d+)?)/i);
+  if(m){const l=Number(m[1]),w=Number(m[2]);return `長方形面積 = ${fmt(l*w)}\n周長 = ${fmt(2*(l+w))}`}
+  m=raw.match(/(?:球).*?(?:半徑|radius|r)\s*[=:：]?\s*(-?\d+(?:\.\d+)?)/i);
+  if(m){const r=Number(m[1]);return `球表面積 = ${fmt(4*Math.PI*r*r)}\n球體積 = ${fmt(4*Math.PI*r*r*r/3)}`}
+  m=raw.match(/(?:圓柱).*?(?:半徑|radius|r)\s*[=:：]?\s*(-?\d+(?:\.\d+)?)\D+(?:高|height|h)\s*[=:：]?\s*(-?\d+(?:\.\d+)?)/i);
+  if(m){const r=Number(m[1]),h=Number(m[2]);return `圓柱底面積 = ${fmt(Math.PI*r*r)}\n體積 = ${fmt(Math.PI*r*r*h)}`}
+  m=raw.match(/(?:圓錐).*?(?:半徑|radius|r)\s*[=:：]?\s*(-?\d+(?:\.\d+)?)\D+(?:高|height|h)\s*[=:：]?\s*(-?\d+(?:\.\d+)?)/i);
+  if(m){const r=Number(m[1]),h=Number(m[2]);return `圓錐底面積 = ${fmt(Math.PI*r*r)}\n體積 = ${fmt(Math.PI*r*r*h/3)}`}
+  m=raw.match(/(?:兩點距離|距離).*?\(?\s*(-?\d+(?:\.\d+)?)\s*[,，]\s*(-?\d+(?:\.\d+)?)\s*\)?\D+\(?\s*(-?\d+(?:\.\d+)?)\s*[,，]\s*(-?\d+(?:\.\d+)?)\s*\)?/i);
+  if(m){const d=Math.hypot(Number(m[3])-Number(m[1]),Number(m[4])-Number(m[2]));return `兩點距離 = √((x₂−x₁)²+(y₂−y₁)²) = ${fmt(d)}`}
+  m=raw.match(/(?:勾股|畢氏).*?(?:兩股|直角邊)?\s*(-?\d+(?:\.\d+)?)\s*(?:和|、|與|,|，)\s*(-?\d+(?:\.\d+)?)/i);
+  if(m){const a=Number(m[1]),b=Number(m[2]);return `若兩股為 ${a}、${b}，斜邊 = √(a²+b²) = ${fmt(Math.sqrt(a*a+b*b))}`}
+  return null;
+}
+function functionAnalysisText(raw){
+  const m=raw.match(/(?:f\s*\(\s*x\s*\)|函數)\s*(?:=|＝)\s*([^，。]+?)(?:\s*(?:範圍|在)\s*(-?\d+(?:\.\d+)?)\s*(?:到|至|~|～)\s*(-?\d+(?:\.\d+)?))?$/i);
+  if(!m)return null;
+  const expr=m[1].trim(), xmin=m[2]===undefined?-10:Number(m[2]), xmax=m[3]===undefined?10:Number(m[3]);
+  if(!(xmax>xmin))return '函數分析的 x 範圍必須是最大值大於最小值。';
+  let min={x:0,y:Infinity},max={x:0,y:-Infinity},roots=[],prev=null;
+  for(let i=0;i<=1200;i++){
+    const x=xmin+(xmax-xmin)*i/1200; let y; try{y=evaluateExpression(expr,x)}catch{continue}
+    if(!Number.isFinite(y)||Math.abs(y)>1e12){prev=null;continue}
+    if(y<min.y)min={x,y}; if(y>max.y)max={x,y};
+    if(prev&&prev.y*y<0){const t=prev.x+(x-prev.x)*(-prev.y)/(y-prev.y);roots.push(t)}
+    if(Math.abs(y)<1e-7)roots.push(x); prev={x,y};
+  }
+  const uniq=[...new Set(roots.map(x=>Number(x.toFixed(6))))];
+  return `函數分析 f(x)=${expr}\n近似最小值：f(${fmt(min.x)}) ≈ ${fmt(min.y)}\n近似最大值：f(${fmt(max.x)}) ≈ ${fmt(max.y)}\ny 截距：${fmt(evaluateExpression(expr,0))}\nx 截距：約 ${uniq.length?uniq.map(fmt).join('、'):'找不到或沒有'}`;
+}
+function probabilityText(raw){
+  let m=raw.match(/P\s*\(\s*A\s*\)\s*=\s*(0?\.\d+|1(?:\.0+)?)\s*[,， ]+P\s*\(\s*B\s*\)\s*=\s*(0?\.\d+|1(?:\.0+)?)/i);
+  if(m){const a=Number(m[1]),b=Number(m[2]);return `P(A) = ${a}\nP(B) = ${b}\n若 A、B 獨立：P(A∩B) = ${fmt(a*b)}\nP(A補集) = ${fmt(1-a)}`}
+  m=raw.match(/(?:有利結果|成功結果)\s*(\d+)\s*(?:÷|\/|除以)\s*(?:總結果|所有結果|可能結果)\s*(\d+)/);
+  if(m){const p=Number(m[1])/Number(m[2]);return `P = ${m[1]} ÷ ${m[2]} = ${fmt(p)} = ${fmt(p*100)}%`}
+  m=raw.match(/(?:骰子|dice).*?(?:擲|丟|出現).*?([1-6])/i);
+  if(m)return `公平六面骰擲出 ${m[1]} 的機率 = 1/6 ≈ ${fmt(100/6)}%`;
+  return null;
+}
+function matrixParseText(t){
+  const rows=String(t).trim().split(/\s*;\s*/).filter(Boolean).map(r=>r.trim().split(/[ ,]+/).map(Number));
+  if(!rows.length||rows.some(r=>!r.length||r.some(x=>!Number.isFinite(x))||r.length!==rows[0].length))throw Error('矩陣每列欄數必須相同');
+  return rows;
+}
+function matrixFromAI(raw){
+  const ms=[...raw.matchAll(/\[\s*([^\]]+)\]/g)].map(x=>x[1]);
+  if(ms.length<1)return null;
+  try{
+    const A=matrixParseText(ms[0]);
+    if(/det|行列式/i.test(raw))return `det(A) = ${fmt(det(A))}`;
+    if(/反矩陣|逆矩陣|inverse|inv/i.test(raw))return `A⁻¹ =\n${matText(inv(A)).replace(/<[^>]+>/g,' ')}`;
+    if(ms.length>=2){const B=matrixParseText(ms[1]);if(/乘|×|multiply/i.test(raw)){if(A[0].length!==B.length)throw Error('A 的欄數必須等於 B 的列數');const C=A.map(r=>B[0].map((_,j)=>r.reduce((z,x,k)=>z+x*B[k][j],0)));return `A×B =\n${C.map(r=>'[ '+r.map(fmt).join(', ')+' ]').join('\n')}`}if(A.length!==B.length||A[0].length!==B[0].length)throw Error('矩陣尺寸必須相同');const C=A.map((r,i)=>r.map((x,j)=>x+B[i][j]));return `A+B =\n${C.map(r=>'[ '+r.map(fmt).join(', ')+' ]').join('\n')}`}
+  }catch(e){return '矩陣格式有問題：'+e.message}
+  return null;
+}
+function sequenceText(raw){
+  const m=raw.match(/(?:數列|序列)?\s*[:：]?\s*(-?\d+(?:\.\d+)?(?:\s*[,，、]\s*-?\d+(?:\.\d+)?){2,})/);
+  if(!m)return null;
+  const a=parseNumberList(m[1]);
+  if(a.length<3)return null;
+  const d=a[1]-a[0];
+  if(a.every((x,i)=>i===0||Math.abs(x-a[i-1]-d)<1e-10)) return `這是等差數列，公差 d = ${fmt(d)}\n下一項 = ${fmt(a[a.length-1]+d)}`;
+  if(a.every((x,i)=>i===0||a[i-1]!==0&&Math.abs(x/a[i-1]-(a[1]/a[0]))<1e-10)) {const r=a[1]/a[0];return `這是等比數列，公比 r = ${fmt(r)}\n下一項 = ${fmt(a[a.length-1]*r)}`}
+  return '我看不出這組數字是標準等差或等比數列。';
+}
+function unitText(raw){
+  const m=raw.match(/(-?\d+(?:\.\d+)?)\s*(mm|cm|m|km|ft|in|毫米|公分|公尺|公里|英尺|英吋|g|kg|mg|lb|克|公斤|毫克|磅|l|L|ml|mL|升|毫升|s|min|h|day|秒|分鐘|小時|天|°c|℃|°f|°k|攝氏|華氏|開爾文)\s*(?:轉換|換成|等於|to|->)\s*(mm|cm|m|km|ft|in|毫米|公分|公尺|公里|英尺|英吋|g|kg|mg|lb|克|公斤|毫克|磅|l|L|ml|mL|升|毫升|s|min|h|day|秒|分鐘|小時|天|°c|℃|°f|°k|攝氏|華氏|開爾文)/i);
+  if(!m)return null;
+  const value=Number(m[1]), norm=u=>u.toLowerCase().replace('毫米','mm').replace('公分','cm').replace('公尺','m').replace('公里','km').replace('英尺','ft').replace('英吋','in').replace('克','g').replace('公斤','kg').replace('毫克','mg').replace('磅','lb').replace('升','l').replace('毫升','ml').replace('秒','s').replace('分鐘','min').replace('小時','h').replace('天','day').replace('℃','°c').replace('攝氏','°c').replace('華氏','°f').replace('開爾文','°k');
+  const from=norm(m[2]),to=norm(m[3]);
+  const groups={length:{mm:.001,cm:.01,m:1,km:1000,ft:.3048,in:.0254},mass:{mg:1e-6,g:.001,kg:1,lb:.45359237},volume:{ml:1e-6,l:.001},time:{s:1,min:60,h:3600,day:86400}};
+  for(const g of Object.values(groups))if(from in g&&to in g)return `${value}${m[2]} = ${fmt(value*g[from]/g[to])}${m[3]}`;
+  if(from==='°c'||from==='°f'||from==='°k'){
+    let c=from==='°c'?value:from==='°f'?(value-32)*5/9:value-273.15;
+    const z=to==='°c'?c:to==='°f'?c*9/5+32:c+273.15;
+    return `${value}${m[2]} = ${fmt(z)}${m[3]}`;
+  }
+  return '目前無法在不同物理量類別之間直接換算。';
+}
+function matrixText(raw){ return matrixFromAI(raw); }
+function chemistryText(raw){
+  const text=String(raw).trim();
+  const arrow=text.match(/(?:->|→|=>|=)/);
+  if(!arrow)return null;
+  const parts=text.split(arrow[0]);
+  if(parts.length!==2)return null;
+  const lhs=parts[0].trim(), rhs=parts[1].trim();
+  if(!lhs || !rhs || !/[A-Z][a-z]*/.test(lhs) || !/[A-Z][a-z]*/.test(rhs))return null;
+  try{
+    const r=balanceEquation(lhs+'->'+rhs);
+    const left=r.L.map((x,i)=>(r.co[i]===1?'':r.co[i])+x).join(' + ');
+    const right=r.R.map((x,i)=>(r.co[r.L.length+i]===1?'':r.co[r.L.length+i])+x).join(' + ');
+    return '配平結果：\n'+left+' → '+right+'\n最簡整數比：'+r.co.join(' : ')+'\n檢查元素：'+r.els.join('、');
+  }catch(e){return '這個化學方程式目前無法配平：'+e.message}
+}
+function localAIAnswer(q){
+  const raw=String(q).trim(), s=raw.toLowerCase().replace(/\s+/g,' ');
+  if(!raw)return '請輸入問題，我會使用 MathBox 的工具能力幫你處理。';
+  if(/^(你好|嗨|哈囉|hello|hi)[！!。.]?$/.test(s))return '你好！我是 MathBox AI。我可以使用本站的計算、方程式、統計、矩陣、排列組合、機率、幾何、數列、單位與化學配平能力。';
+  if(/你能做什麼|可以做什麼|有哪些功能|所有功能/.test(raw))return '我可以處理：\n🧮 科學計算：算式、三角函數、平方根、百分比\n🔢 方程式：一次、二次方程式\n📈 函數：說明函數與基本圖形概念\n📊 統計：平均數、中位數、眾數、全距、變異數、標準差\n🔲 矩陣：基本矩陣運算\n🎯 排列組合：nPr、nCr、階乘\n🎲 機率：基本機率概念與計算\n📐 幾何：三角形、圓、長方形、勾股\n🔢 數列：等差、等比\n📏 單位：常見長度與重量換算\n🧪 化學：化學方程式配平';
+  if(/質數|素數/.test(raw))return '質數是大於 1，而且只有 1 和自己兩個正因數的整數。例如 2、3、5、7、11。';
+  if(/偶數/.test(raw))return '偶數是可以被 2 整除的整數，例如 −4、0、2、8。';
+  if(/奇數/.test(raw))return '奇數是不能被 2 整除的整數，例如 −3、1、5、9。';
+  if(/二次方程式/.test(raw)&&!/[=＝].*x/.test(raw))return '二次方程式可寫成 ax² + bx + c = 0（a ≠ 0），判別式 Δ=b²−4ac。本站的二次方程式工具可以直接輸入 a、b、c 求根。';
+  if(/一次方程式/.test(raw)&&!/[=＝].*x/.test(raw))return '一次方程式的未知數最高次為 1，例如 2x+5=13。';
+  const q2=solveQuadraticText(raw); if(q2)return q2;
+  const q1=solveLinearText(raw); if(q1)return q1;
+  const chem=chemistryText(raw); if(chem)return chem;
+  const mat=matrixText(raw); if(mat)return mat;
+  const fa=functionAnalysisText(raw); if(fa)return fa;
+  const geo=geometryText(raw); if(geo)return geo;
+  const prob=probabilityText(raw); if(prob)return prob;
+  const unit=unitText(raw); if(unit)return unit;
+  const seq=sequenceText(raw); if(seq)return seq;
+  let m=raw.match(/(?:排列|排列數|npr|p)\s*[（(]?\s*(\d+)\s*[,，]\s*(\d+)\s*[）)]?/i)||raw.match(/(\d+)\s*[pP]\s*(\d+)/);
+  if(m)return `排列 ${m[1]}P${m[2]} = ${fmt(nPr(Number(m[1]),Number(m[2])))}`;
+  m=raw.match(/(?:組合|組合數|ncr|c)\s*[（(]?\s*(\d+)\s*[,，]\s*(\d+)\s*[）)]?/i)||raw.match(/(\d+)\s*[cC]\s*(\d+)/);
+  if(m)return `組合 ${m[1]}C${m[2]} = ${fmt(nCr(Number(m[1]),Number(m[2])))}`;
+  m=raw.match(/(?:階乘|factorial)\s*(\d+)/i)||raw.match(/(\d+)\s*!/);
+  if(m)return `${m[1]}! = ${fmt(factorialBig(Number(m[1])))}`;
+  if(/統計|平均數|平均值|中位數|眾數|標準差|變異數/.test(raw)){
+    const lm=raw.match(/(?:統計|資料|數據|data)?\s*[:：]?\s*((?:-?\d+(?:\.\d+)?\s*[,，、\s]\s*)+-?\d+(?:\.\d+)?)/i);
+    if(lm){try{return statAnswer(parseNumberList(lm[1]))}catch(e){}}
+    return '統計可以輸入例如「統計 10, 20, 20, 30, 40」。我會算平均數、中位數、眾數、全距、變異數與標準差。';
+  }
+  if(/機率/.test(raw)){
+    const pm=raw.match(/(\d+)\s*(?:種|個|面)?\s*(?:結果|事件).*?(\d+)\s*(?:種|個|個結果|個有利)/);
+    if(pm){const p=Number(pm[2])/Number(pm[1]);return `基本機率 = 有利結果數 ÷ 所有可能結果數 = ${pm[2]} ÷ ${pm[1]} = ${fmt(p)} = ${fmt(p*100)}%`}
+    return '基本機率公式：P(A)=有利結果數÷所有可能結果數。例如公平骰子擲出 6 的機率是 1/6。';
+  }
+  if(/三角形.*面積|面積.*三角形/.test(raw))return '三角形面積 = 底 × 高 ÷ 2。你也可以直接問我「三角形底 10 高 6 的面積」。';
+  if(/圓.*面積|面積.*圓/.test(raw))return '圓面積 = πr²；圓周長 = 2πr。';
+  if(/勾股|畢氏/.test(raw))return '直角三角形符合 a²+b²=c²，其中 c 是斜邊。';
+  if(/等差|等比|數列/.test(raw)&&!/[0-9]/.test(raw))return '你可以輸入「數列 2, 5, 8, 11」或「數列 3, 6, 12, 24」，我會判斷等差/等比並求下一項。';
+  if(/函數繪圖|畫圖|函數圖形/.test(raw))return '函數繪圖工具支援輸入例如 x^2-4、sin(x)、sqrt(x)。AI 可以幫你整理函數，但實際圖形請到「函數繪圖」頁面查看。';
+  if(/化學|配平/.test(raw))return '化學工具支援用週期表組成分子，也可以輸入例如「H2 + O2 -> H2O」讓我直接配平。';
+  // 最後才嘗試數學算式，這讓「6+7」、「例如 6+7」、「計算 6+7」都能工作。
+  let expr=raw.replace(/^(?:例如|ex|example|計算|算|算一下|幫我算|幫我計算|答案|calculate|calc)\s*/i,'').replace(/^[:：]\s*/,'').replace(/=/g,'');
+  if(/^[0-9πeE+\-*/().,%^×÷√\s]+$/i.test(expr) || /^(?:sqrt|sin|cos|tan|abs|ln|log|exp|floor|ceil|round)\s*\(/i.test(expr)){
+    expr=expr.replace(/√\s*/g,'sqrt');
+    try{return `答案是：${fmt(evaluateExpression(expr))}`;}catch(e){return '我有看到這是一個數學算式，但格式似乎有問題：'+e.message}
+  }
+  return '我目前是「不用 API Key 的本機 MathBox AI」，不是連線型 ChatGPT；但我可以直接使用本站各工具的計算能力。請把題目寫成算式、方程式、統計資料、幾何條件、排列組合、數列或化學方程式，我會直接幫你算。';
+}
+function initLocalAI(){
+  if(!$('aiInput')||!$('aiSend')||!$('aiMessages')) return;
+  if(window.__mathboxAIInitialized) return;
+  window.__mathboxAIInitialized=true;
+  const input=$('aiInput'), sendBtn=$('aiSend'), messages=$('aiMessages');
+  const add=(text,who)=>{
+    const d=document.createElement('div');
+    d.className='ai-message '+who;
+    d.innerHTML=esc(text).replace(/\n/g,'<br>');
+    messages.appendChild(d);
+    messages.scrollTop=messages.scrollHeight;
+  };
+  let sending=false;
+  const send=()=>{
+    if(sending)return;
+    const q=input.value.trim();
+    if(!q)return;
+    sending=true;
+    sendBtn.disabled=true;
+    input.disabled=true;
+    add(q,'user');
+    input.value='';
+    const answer=localAIAnswer(q);
+    add(answer,'bot');
+    input.disabled=false;
+    sendBtn.disabled=false;
+    sending=false;
+    input.focus();
+  };
+  sendBtn.onclick=send;
+  input.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();send()}};
+  document.querySelectorAll('[data-ai-q]').forEach(b=>b.onclick=()=>{
+    if(sending)return;
+    input.value=b.dataset.aiQ||'';
+    send();
+  });
+}
+
+initLocalAI();
+
 })();
